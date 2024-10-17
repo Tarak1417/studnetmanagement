@@ -114,7 +114,7 @@ const Contact = () => {
             <strong>Phone:</strong> +123-456-7890
           </p>
           <p className="text-gray-600 mt-1">
-            <strong>Address:</strong> 123 Free Source St., Education City, USA
+            <strong>Addrss:</strong> 123 Free Source St., Education City, USA
           </p>
         </div>
 
