@@ -1,101 +1,189 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Bar, Doughnut } from 'react-chartjs-2'; // Changed from Pie to Doughnut for hollow center
+import { Chart, registerables } from 'chart.js';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion'; // For animations
+import 'react-calendar/dist/Calendar.css'; // Import the default styles for the calendar
+
+
+Chart.register(...registerables);
+
+const Dashboard = () => {
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [presentPercentage, setPresentPercentage] = useState(0);
+  const [absentPercentage, setAbsentPercentage] = useState(0);
+  const [rotation, setRotation] = useState(0); // State for rotation based on cursor movement
+  const [isCursorMoving, setIsCursorMoving] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [inputDate, setInputDate] = useState('');
+
+  useEffect(() => {
+    // Example data
+    setTotalStudents(10);
+    setPresentPercentage(83.3);
+    setAbsentPercentage(16.7);
+  }, []);
+
+  const barData = {
+    labels: ['Present', 'Absent'],
+    datasets: [
+      {
+        label: 'Attendance Percentage',
+        data: [presentPercentage, absentPercentage],
+        backgroundColor: ['#36a2eb', '#ff6384'],
+      },
+    ],
+  };
+
+  const doughnutData = {
+    labels: ['Present', 'Absent'],
+    datasets: [
+      {
+        label: 'Attendance Distribution',
+        data: [presentPercentage * totalStudents / 100, absentPercentage * totalStudents / 100], // Convert percentages to actual counts
+        backgroundColor: ['#36a2eb', '#ff6384'],
+        hoverOffset: 15,
+        borderWidth: 3,
+        cutout: '70%', // Hollow center
+      },
+    ],
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    animation: {
+      animateRotate: true,
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+      },
+    },
+  };
+
+  const handleMouseMove = (event) => {
+    const windowWidth = window.innerWidth;
+    const mouseX = event.clientX;
+    const rotationAmount = ((mouseX / windowWidth) * 2 - 1) * 10; // Rotation from -10deg to 10deg
+    setRotation(rotationAmount);
+    setIsCursorMoving(true);
+  };
+
+  // Reset rotation when cursor stops moving
+  useEffect(() => {
+    let timeoutId;
+    if (isCursorMoving) {
+      timeoutId = setTimeout(() => {
+        setIsCursorMoving(false);
+      }, 1000); // Stop rotation after 500ms of no movement
+    }
+    return () => clearTimeout(timeoutId);
+  }, [isCursorMoving]);
+
+  const handleDateChange = (newDate) => {
+    setDate(newDate); // Update the selected date
+    setInputDate(newDate.toISOString().split('T')[0]); // Set input date in YYYY-MM-DD format
+  };
+
+  const handleInputChange = (e) => {
+    setInputDate(e.target.value); // Update input date from text input
+  };
+
+  const handleInputDateSubmit = (e) => {
+    e.preventDefault();
+    const selectedDate = new Date(inputDate); // Convert input to Date object
+    if (!isNaN(selectedDate)) {
+      setDate(selectedDate); // Update the calendar date if valid
+    } else {
+      alert('Invalid date format. Please use YYYY-MM-DD.');
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div onMouseMove={handleMouseMove}>
+      
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="grid grid-cols-3 gap-4 mt-8">
+      
+  <motion.div
+    className="bg-blue-200 p-4"
+    initial={{ opacity: 0, y: 20 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    transition={{ duration: 0.5 }} 
+  >
+    Total Students: {totalStudents}
+  </motion.div>
+  
+ 
+  <motion.div
+    className="bg-blue-200 p-4"
+    initial={{ opacity: 0, y: 20 }} // Initial state
+    animate={{ opacity: 1, y: 0 }} // Animate to this state
+    transition={{ duration: 0.5 }} // Transition duration
+  >
+    Total Present: {presentPercentage}%
+  </motion.div>
+  
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  <motion.div
+    className="bg-blue-200 p-4"
+    initial={{ opacity: 0, y: 20 }} // Initial state
+    animate={{ opacity: 1, y: 0 }} // Animate to this state
+    transition={{ duration: 0.5 }} // Transition duration
+  >
+    Total Absent: {absentPercentage}%
+  </motion.div>
+</div>
+      <div className="mt-8">
+        <div className="flex flex-col items-center">
+          <form onSubmit={handleInputDateSubmit} className="mt-4">
+            <input
+              type="date"
+              value={inputDate}
+              onChange={handleInputChange}
+              className="border rounded p-2"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <button type="submit" className="ml-2 bg-blue-500 text-white rounded p-2">Search</button>
+          </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </div>
+      <select>
+  <option>All</option>
+  <option>Science</option>
+  <option>English</option>
+  <option>Math</option>
+</select>
+  
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center mt-8">
+  
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          style={{ width: '400px', height: '300px' }} // Set width and height for the bar chart
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <h2 className="font-bold text-center">Attendance Percentage</h2>
+          <Bar data={barData} options={{ responsive: true }} />
+        </motion.div>
+
+        {/* Doughnut Chart with Rotation */}
+        <motion.div
+          style={{
+            width: '300px',
+            height: '300px',
+            transform: `rotate(${rotation}deg)`, // Apply rotation based on cursor movement
+          }}
+          initial={{ scale: 1 }}
+          transition={{ duration: 1 }}
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <h2 className="font-bold text-center">Attendance Distribution</h2>
+          <Doughnut data={doughnutData} options={doughnutOptions} />
+        </motion.div>
+      </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
