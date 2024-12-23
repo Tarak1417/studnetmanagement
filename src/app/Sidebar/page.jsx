@@ -18,7 +18,7 @@ const Sidebar = () => {
         <li className="p-4 hover:bg-gray-600">
           <Link href="/contact">contact</Link>
         </li>
-        <li className="p-4 hover:bg-gray-600">
+        <li className="p-5 hover:bg-gray-600">
           <Link href="/me">contact</Link>
         </li>
        
